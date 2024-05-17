@@ -19,7 +19,7 @@ from regions import make_example_dataset
 
 #%%
 
-def TestWithin(pointRA,pointDec,cenRA,cenDec,SMA,SMI,angi,Plot=True):
+def TestWithin(pointRA,pointDec,cenRA,cenDec,SMA,SMI,angi,Title='You should give a title for this',Plot=True):
     #pointRA, pointDec : RA and Dec, in decimal degrees, of test point
     #cenRA, decDec     : RA and Dec center of ellipse
     #SMA, SMI          : semi-major and semi-minor axis in degrees
@@ -29,10 +29,10 @@ def TestWithin(pointRA,pointDec,cenRA,cenDec,SMA,SMI,angi,Plot=True):
     
     #make WCS for our purposes
     w = WCS(naxis=2)
-    w.wcs.crpix = [cenRA, cenDec]
-    w.wcs.cdelt = np.array([-0.01, 0.01])
-    w.wcs.crval = [0, 0]
-    w.wcs.ctype = ["RA---AIR", "DEC--AIR"]
+    w.wcs.crpix = [0, 0]
+    w.wcs.cdelt = np.array([-0.0005, 0.0005])
+    w.wcs.crval = [cenRA, cenDec]
+    w.wcs.ctype = ["RA---AIT", "DEC--AIT"]
     w.wcs.set_pv([(0, 0, 0)])
     
     #define target point
@@ -69,6 +69,9 @@ def TestWithin(pointRA,pointDec,cenRA,cenDec,SMA,SMI,angi,Plot=True):
         
         ax.set_xlim(-500,500)
         ax.set_ylim(-500,500)
+        ax.set_xlabel('East<    RA     > West')
+        ax.set_ylabel('South<    Dec     >North')
+        ax.set_title(Title[5:]+" ang = "+str(angi))
         ax.grid()
         
         plt.show()
@@ -111,12 +114,34 @@ for i in range(0,len(ExcessSum)):
     myDec = ExcessCoord[i].dec.deg
     
     toPlot=False
-    # if i%500 == 0:
-    #     toPlot=True
+    if i%251 == 0:
+        toPlot=True
     
-    MyOutput = TestWithin(myRA,myDec,FGLRA[FindIt],FGLDec[FindIt],FGLsma[FindIt],FGLsmi[FindIt],FGLang[FindIt],Plot=toPlot)
+    MyOutput = TestWithin(myRA,myDec,FGLRA[FindIt],FGLDec[FindIt],FGLsma[FindIt],FGLsmi[FindIt],FGLang[FindIt],Title=ExcessSum['Name'][i],Plot=toPlot)
     
-    if i%500 == 0:
+    if i%251 == 0:
         print(MyOutput)
     
     ExcessSum['Inside95actual'][i] = MyOutput
+    
+    
+#%% Output
+
+Right = ExcessSum['Inside95actual'].values
+Wrong = ExcessSum['Inside95?'].values
+
+FalsePositive = sum((Right == False) * (Wrong == True))
+FalseNegative = sum((Right == True) * (Wrong == False))
+
+AllPositive = sum((Right == True) * (Wrong == True))
+AllNegative = sum((Right == False) * (Wrong == False))
+
+print(" done! ")
+print("All Postive: "+str(AllPositive))     
+print("False Postive: "+str(FalsePositive)+" (in wrong ellipses, but not right ellipses)")     
+print("False Negative: "+str(FalseNegative)+" (in right ellipses, but not wrong ellipses)")     
+print("All Negative: "+str(AllNegative))     
+    
+    
+    
+
