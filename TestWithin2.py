@@ -81,67 +81,65 @@ def TestWithin(pointRA,pointDec,cenRA,cenDec,SMA,SMI,angi,Title='You should give
     
 #%% making venn diagram : loading stuff in
 
-ExcessSum = pd.read_csv('ExcessSummary.txt')
-ExcessSum['Inside95actual'] = ExcessSum['Inside95?'].values
-ExcessSum['Flag'] = ExcessSum['Inside95?'].values
+# ExcessSum = pd.read_csv('ExcessSummary.txt')
+# ExcessSum['Inside95actual'] = ExcessSum['Inside95?'].values
+# ExcessSum['Flag'] = ExcessSum['Inside95?'].values
 
-ExcessRA = ExcessSum['RA'].values
-ExcessDec = ExcessSum['Dec'].values
+# ExcessRA = ExcessSum['RA'].values
+# ExcessDec = ExcessSum['Dec'].values
 
-ExcessCoord = SkyCoord(ra=ExcessRA, dec=ExcessDec, frame='fk5',unit=(u.hourangle, u.deg))
+# ExcessCoord = SkyCoord(ra=ExcessRA, dec=ExcessDec, frame='fk5',unit=(u.hourangle, u.deg))
 
-FGL = fits.open('4FGL_DR4.fit')
+# FGL = fits.open('4FGL_DR4.fit')
 
-FGLname = FGL[1].data['Source_Name']
-FGLRA = FGL[1].data['RAJ2000 ']
-FGLDec = FGL[1].data['DEJ2000 ']
-FGLsma = FGL[1].data['Conf_95_SemiMajor']
-FGLsmi = FGL[1].data['Conf_95_SemiMinor']
-FGLang = FGL[1].data['Conf_95_PosAng']
+# FGLname = FGL[1].data['Source_Name']
+# FGLRA = FGL[1].data['RAJ2000 ']
+# FGLDec = FGL[1].data['DEJ2000 ']
+# FGLsma = FGL[1].data['Conf_95_SemiMajor']
+# FGLsmi = FGL[1].data['Conf_95_SemiMinor']
+# FGLang = FGL[1].data['Conf_95_PosAng']
 
 #%% comparing
 
-for i in range(0,len(ExcessSum)):
-    FindIt = np.where((FGLname == ExcessSum['Name'][i]+'c') + (FGLname == ExcessSum['Name'][i]+'e') + (FGLname == ExcessSum['Name'][i]))[0]
-    if len(FindIt) == 0:
-        ExcessSum['Flag'][i] = False
-        continue
-    else:
-        ExcessSum['Flag'][i] = True
-    FindIt = FindIt[0]
+# for i in range(0,len(ExcessSum)):
+#     FindIt = np.where((FGLname == ExcessSum['Name'][i]+'c') + (FGLname == ExcessSum['Name'][i]+'e') + (FGLname == ExcessSum['Name'][i]))[0]
+#     if len(FindIt) == 0:
+#         ExcessSum['Flag'][i] = False
+#         continue
+#     else:
+#         ExcessSum['Flag'][i] = True
+#     FindIt = FindIt[0]
     
-    myRA = ExcessCoord[i].ra.deg
-    myDec = ExcessCoord[i].dec.deg
+#     myRA = ExcessCoord[i].ra.deg
+#     myDec = ExcessCoord[i].dec.deg
     
-    toPlot=False
-    if i%251 == 0:
-        toPlot=True
+#     toPlot=False
+#     if i%251 == 0:
+#         toPlot=True
     
-    MyOutput = TestWithin(myRA,myDec,FGLRA[FindIt],FGLDec[FindIt],FGLsma[FindIt],FGLsmi[FindIt],FGLang[FindIt],Title=ExcessSum['Name'][i],Plot=toPlot)
+#     MyOutput = TestWithin(myRA,myDec,FGLRA[FindIt],FGLDec[FindIt],FGLsma[FindIt],FGLsmi[FindIt],FGLang[FindIt],Title=ExcessSum['Name'][i],Plot=toPlot)
     
-    if i%251 == 0:
-        print(MyOutput)
+#     if i%251 == 0:
+#         print(MyOutput)
     
-    ExcessSum['Inside95actual'][i] = MyOutput
+#     ExcessSum['Inside95actual'][i] = MyOutput
     
     
 #%% Output
 
-Right = ExcessSum['Inside95actual'].values
-Wrong = ExcessSum['Inside95?'].values
+# Right = ExcessSum['Inside95actual'].values
+# Wrong = ExcessSum['Inside95?'].values
 
-FalsePositive = sum((Right == False) * (Wrong == True))
-FalseNegative = sum((Right == True) * (Wrong == False))
+# FalsePositive = sum((Right == False) * (Wrong == True))
+# FalseNegative = sum((Right == True) * (Wrong == False))
 
-AllPositive = sum((Right == True) * (Wrong == True))
-AllNegative = sum((Right == False) * (Wrong == False))
+# AllPositive = sum((Right == True) * (Wrong == True))
+# AllNegative = sum((Right == False) * (Wrong == False))
 
-print(" done! ")
-print("All Postive: "+str(AllPositive))     
-print("False Postive: "+str(FalsePositive)+" (in wrong ellipses, but not right ellipses)")     
-print("False Negative: "+str(FalseNegative)+" (in right ellipses, but not wrong ellipses)")     
-print("All Negative: "+str(AllNegative))     
+# print(" done! ")
+# print("All Postive: "+str(AllPositive))     
+# print("False Postive: "+str(FalsePositive)+" (in wrong ellipses, but not right ellipses)")     
+# print("False Negative: "+str(FalseNegative)+" (in right ellipses, but not wrong ellipses)")     
+# print("All Negative: "+str(AllNegative))     
     
     
-    
-
