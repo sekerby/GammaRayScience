@@ -19,7 +19,7 @@ from regions import make_example_dataset
 
 #%%
 
-def TestWithin(pointRA,pointDec,cenRA,cenDec,SMA,SMI,angi,Title='You should give a title for this',Plot=True):
+def TestWithin(pointRA,pointDec,SN,cenRA,cenDec,SMA,SMI,angi,Title='You should give a title for this',Plot=True):
     #pointRA, pointDec : RA and Dec, in decimal degrees, of test point
     #cenRA, decDec     : RA and Dec center of ellipse
     #SMA, SMI          : semi-major and semi-minor axis in degrees
@@ -30,7 +30,7 @@ def TestWithin(pointRA,pointDec,cenRA,cenDec,SMA,SMI,angi,Title='You should give
     #make WCS for our purposes
     w = WCS(naxis=2)
     w.wcs.crpix = [0, 0]
-    w.wcs.cdelt = np.array([-0.0005, 0.0005])
+    w.wcs.cdelt = np.array([-1/3600, 1/3600])
     w.wcs.crval = [cenRA, cenDec]
     w.wcs.ctype = ["RA---AIT", "DEC--AIT"]
     w.wcs.set_pv([(0, 0, 0)])
@@ -53,24 +53,31 @@ def TestWithin(pointRA,pointDec,cenRA,cenDec,SMA,SMI,angi,Title='You should give
     region_sky = EllipseSkyRegion(center=center_sky,width=2*SMA*u.deg, height=2*SMI*u.deg,angle=ang*u.deg)
     
     if Plot:
-        
-        point_pixel = point_sky.to_pixel(w)
         center_pixel = center_sky.to_pixel(w)
                 
         region_pixel = region_sky.to_pixel(w)
-        region_artist = region_pixel.as_artist(fc='white',color='red')
-
+        region_artist = region_pixel.as_artist(fc='white',color='red',lw=2,ls='--')
+        
+        fig=plt.figure(figsize=(8,8))
+        
         ax = plt.gca()
         ax.set_aspect('equal')
         
         ax.add_artist(region_artist)
-        ax.plot(center_pixel[0],center_pixel[1],'bx')
-        ax.plot(point_pixel[0],point_pixel[1],'gx')
         
-        ax.set_xlim(-500,500)
-        ax.set_ylim(-500,500)
-        ax.set_xlabel('East<    RA     > West')
-        ax.set_ylabel('South<    Dec     >North')
+        ax.plot(center_pixel[0],center_pixel[1],'bo')
+        
+        for i in range(0,len(point_sky)):
+            point_pixel = point_sky[i].to_pixel(w)
+            if SN[i]<3:
+                ax.plot(point_pixel[0],point_pixel[1],'gx')
+            if SN[i]>=3:
+                ax.plot(point_pixel[0],point_pixel[1],'go')
+        
+        ax.set_xlim(-1000,1000)
+        ax.set_ylim(-1000,1000)
+        ax.set_xlabel('East <    RA(arcsec)-cen     > West')
+        ax.set_ylabel('South <    Dec(arcsec)-cen     > North')
         ax.set_title(Title[5:]+" ang = "+str(angi))
         ax.grid()
         
