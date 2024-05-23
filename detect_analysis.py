@@ -15,7 +15,8 @@ FGLang = FGL[1].data['Conf_95_PosAng']
 startpath=os.getcwd()+"/"
 os.chdir(startpath)
 
-specpath="testData"
+os.system("ls")
+specpath=input("Enter data directory: ")
 totpath=startpath+specpath
 os.chdir(totpath)
 
@@ -27,10 +28,12 @@ problem=[]
 
 for dirpath, dirnames, filenames in os.walk(totpath):
     os.chdir(dirpath)
-    print(dirpath)
+    print('4FGL '+dirpath.split('/')[-1])
     
     # does the directory have a ximage .det file?
     if 'total.det' in filenames:
+        
+        i+=1
         
         detfile = open('total.det','r')
         logfile = open('ximage.log','r')
@@ -54,14 +57,12 @@ for dirpath, dirnames, filenames in os.walk(totpath):
         
         # the lines in the .log file that we want start with 'X'
         for i in range(0,len(loglines)):
-            if loglines[i].split()[0] == 'X':
-                Xpixels.append(loglines[i].split()[2])
-                Ypixels.append(loglines[i].split()[5])
-        
-        # the lines with the SOSTA S/N start with "Signal"       
-        for i in range(0,len(loglines)):
-            if loglines[i].split()[0] == 'Signal':
-                SN.append(loglines[i].split()[-1])
+            if len(loglines[i].split())>0:
+                if loglines[i].split()[0] == 'X':
+                    Xpixels.append(loglines[i].split()[2])
+                    Ypixels.append(loglines[i].split()[5])
+                if loglines[i].split()[0] == 'Signal':
+                    SN.append(float(loglines[i].split()[-1]))
         # check to make sure that the same number of .det and .leg files have been found        
         if len(dets) != len(SN):
             print('Problem! The .det and .log files may be malformed.')
@@ -75,13 +76,17 @@ for dirpath, dirnames, filenames in os.walk(totpath):
         #     outfile.write('\n')
                 
 #%% now reading in the created file
-        MyRAs = 15*(float(dets[0][50:52])+float(dets[0][53:55])/60+float(dets[0][56:62])/3600)
-        MySign = np.abs(float(dets[0][63:66]))/float(dets[0][63:66])
-        MyDecs = float(dets[0][63:66])+MySign*(float(dets[0][67:69])/60+float(dets[0][70:76])/3600)
+
+        MyRAs = []
+        MyDecs = []
+        MySN = np.array(SN)
         
-        MyRAs=MyDets['RA'].values
-        MyDecs=MyDets['Dec'].values
-        MyName='4FGL '+dirpath.split('\\')[-1]
+        for det in dets:
+            MyRAs.append(15*(float(det[50:52])+float(det[53:55])/60+float(det[56:62])/3600))
+            MySign = np.abs(float(det[63:66]))/float(det[63:66])
+            MyDecs.append(float(det[63:66])+MySign*(float(det[67:69])/60+float(det[70:76])/3600))
+            
+        MyName='4FGL '+dirpath.split('/')[-1]
         
         find = np.where(FGLnames == MyName)[0][0]
         thisRA,thisDec,thissma,thissmi,thisang = FGLRA[find],FGLDec[find],FGLsma[find],FGLsmi[find],FGLang[find]
@@ -90,4 +95,12 @@ for dirpath, dirnames, filenames in os.walk(totpath):
         logfile.close()
         outfile.close()
         
-        TestWithin(MyRAs,MyDecs,thisRA,thisDec,thissma,thissmi,thisang,MyName,True)
+    
+        TestWithin(MyRAs,MyDecs,MySN,thisRA,thisDec,thissma,thissmi,thisang,MyName,True)
+        
+    else:
+        print('Found no XImage detection file. Empty or no detections.')
+        
+        
+        
+        
